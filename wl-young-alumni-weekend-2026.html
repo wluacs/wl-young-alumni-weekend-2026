@@ -184,11 +184,11 @@ body.public-mode .admin-panel { display: none !important; }
   line-height: 1.3; flex: 1;
 }
 /* header colors by category */
-.hd-featured { background: var(--c-featured); color: var(--c-featured-dk); }
-.hd-featured .card-title { color: var(--c-featured-dk); }
-.hd-featured .card-header-dot { background: rgba(16,76,96,0.2); }
-.hd-featured .action-btn { border-color: rgba(16,76,96,0.3); background: rgba(16,76,96,0.1); color: var(--c-featured-dk); }
-.hd-featured .action-btn:hover { background: rgba(16,76,96,0.2); }
+.hd-featured { background: var(--c-featured); }
+.hd-featured .card-title { color: #fff; }
+.hd-featured .card-header-dot { background: rgba(255,255,255,0.25); }
+.hd-featured .action-btn { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.15); color: #fff; }
+.hd-featured .action-btn:hover { background: rgba(255,255,255,0.3); }
 
 .hd-class    { background: var(--c-class);    }
 .hd-affinity { background: var(--c-affinity); }
@@ -470,7 +470,7 @@ body.public-mode .admin-panel { display: none !important; }
 <header class="site-header" id="siteHeader">
   <div class="header-inner">
     <div class="header-eyebrow">W&L Alumni Engagement</div>
-    <img src="https://advancement.wlu.edu/www/images/Events/YAW/YAW%202026%20Logo.png" alt="W&L Young Alumni Weekend 2026" style="height:140px;width:auto;margin-bottom:0.75rem;display:block;margin-left:auto;margin-right:auto;" />
+    <img src="https://advancement.wlu.edu/www/images/Events/YAW/YAW%202026%20Logo.png" alt="W&L Young Alumni Weekend 2026" style="height:180px;width:auto;margin-bottom:0.75rem;display:block;margin-left:auto;margin-right:auto;" />
     <div class="header-dates">September 25–27, 2026 &nbsp;·&nbsp; Lexington, Virginia</div>
   </div>
   <div class="colonnade-strip"></div>
@@ -730,11 +730,10 @@ async function init() {
 function buildDayPills() {
   const c = document.getElementById('dayPills');
   c.innerHTML = '';
-  // All days
   const allBtn = mkPill('All days', activeDay === 'all', 'p-all-active', () => setDay('all'));
   c.appendChild(allBtn);
   DAYS.forEach(d => {
-    const btn = mkPill(d.label, activeDay === d.value, 'p-day-active', () => setDay(d.value));
+    const btn = mkPill(d, activeDay === d, 'p-day-active', () => setDay(d));
     c.appendChild(btn);
   });
 }
@@ -831,7 +830,7 @@ function render() {
   }
 
   // Group by day, preserving DAYS order
-  const dayOrder = DAYS.map(d => d.value);
+  const dayOrder = DAYS;
   const byDay = {};
   visible.forEach(e => { if (!byDay[e.date]) byDay[e.date] = []; byDay[e.date].push(e); });
   const orderedDays = dayOrder.filter(d => byDay[d]);
@@ -900,7 +899,7 @@ function editEvent(id) {
   const e = events.find(ev => ev.id === id); if (!e) return;
   document.getElementById('card-'+id).style.opacity = '0.4';
   const catOpts  = Object.entries(CAT).map(([k,v]) => `<option value="${k}" ${e.cat===k?'selected':''}>${v.label}</option>`).join('');
-  const dateOpts = DAYS.map(d => `<option value="${d.value}" ${e.date===d.value?'selected':''}>${d.value}</option>`).join('');
+  const dateOpts = DAYS.map(d => `<option value="${d}" ${e.date===d?'selected':''}>${d}</option>`).join('');
   const form = document.createElement('div');
   form.className = 'inline-edit'; form.id = 'edit-'+id;
   form.innerHTML = `
