@@ -657,18 +657,18 @@ function parseMonday(data) {
       item.column_values.forEach(c => { cv[c.id] = c.text || ''; });
 
       const title    = item.name || '';
-      const date     = (cv['text_mm26t2ks'] || '').trim();
-      const start    = (cv['text_mm26ew9e'] || '').trim();
-      const end      = (cv['text_mm26es9f'] || '').trim();
-      const location = (cv['text_mm26akqn'] || '').trim();
-      const catRaw   = (cv['dropdown_mm26zmmb'] || 'featured').trim().toLowerCase();
+      const date     = (cv['text_mm3j92dc'] || '').trim();
+      const start    = (cv['text_mm3j1gqa'] || '').trim();
+      const end      = (cv['text_mm3jn4et'] || '').trim();
+      const location = (cv['text_mm3j1bee'] || '').trim();
+      const catRaw   = (cv['dropdown_mm3jg46a'] || 'featured').trim().toLowerCase();
       // Monday may return multiple values comma-separated e.g. "featured, family"
       const catParts = catRaw.split(',').map(s => s.trim().replace(/\s+/g,'-')).filter(Boolean);
       const family   = catParts.includes('family');
       const cat      = catParts.find(c => c !== 'family') || catParts[0] || 'featured';
-      const classes  = (cv['text_mm264cbe'] || 'Campus-Wide').trim();
-      const subLabel = (cv['text_mm26ef43'] || '').trim();
-      const desc     = (cv['text_mm26trg4'] || '').trim();
+      const classes  = (cv['text_mm3jfn9h'] || 'Campus-Wide').trim();
+      const subLabel = (cv['text_mm3jwc04'] || '').trim();
+      const desc     = (cv['long_text_mm3jp3vc'] || '').trim();
 
       const classArr = classes.split(',').map(s => s.trim()).filter(Boolean);
 
