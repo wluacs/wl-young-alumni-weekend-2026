@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>W&L Schedule Admin</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:    #1a2e3b;
+  --crimson: #8b2a2a;
+  --sky:     #8bbfcf;
+  --sky-lt:  #eef6fa;
+  --gold:    #c8960c;
+  --gold-lt: #fdf6e3;
+  --green:   #2e7d5e;
+  --green-lt:#e8f5ee;
+  --red:     #b22234;
+  --red-lt:  #fdf0f0;
+  --text:    #1a1a1a;
+  --muted:   #666;
+  --border:  rgba(0,0,0,0.10);
+  --card:    #fff;
+  --bg:      #f2f4f6;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --serif: Georgia, 'Times New Roman', serif;
+}
+
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── LOGIN SCREEN ── */
+#loginScreen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: var(--navy);
+}
+.login-box {
+  background: #fff; border-radius: 16px; padding: 2.5rem 2rem;
+  width: 360px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.login-logo {
+  font-family: var(--serif); font-size: 1.5rem; color: var(--navy);
+  margin-bottom: 4px; font-weight: normal;
+}
+.login-logo strong { font-family: var(--sans); font-weight: 700; }
+.login-sub { font-size: 13px; color: var(--muted); margin-bottom: 1.75rem; }
+.login-box input {
+  width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
+  border-radius: 8px; font-size: 15px; font-family: var(--sans);
+  text-align: center; letter-spacing: 0.1em; margin-bottom: 12px;
+  outline: none; transition: border-color 0.13s;
+}
+.login-box input:focus { border-color: var(--sky); }
+.login-btn {
+  width: 100%; padding: 12px; background: var(--navy); color: #fff;
+  border: none; border-radius: 8px; font-size: 15px; font-weight: 500;
+  cursor: pointer; font-family: var(--sans); transition: opacity 0.13s;
+}
+.login-btn:hover { opacity: 0.85; }
+.login-error { color: var(--red); font-size: 13px; margin-top: 8px; display: none; }
+
+/* ── APP SHELL ── */
+#app { display: none; }
+
+.topbar {
+  background: var(--navy); color: #fff;
+  padding: 14px 24px; display: flex; align-items: center; gap: 16px;
+  position: sticky; top: 0; z-index: 50; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.topbar-title { font-family: var(--serif); font-size: 18px; font-weight: normal; flex: 1; }
+.topbar-title strong { font-family: var(--sans); font-weight: 700; }
+.topbar-badge {
+  font-size: 12px; padding: 3px 10px; border-radius: 12px;
+  background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8);
+}
+.logout-btn {
+  font-size: 13px; color: rgba(255,255,255,0.6); cursor: pointer;
+  background: none; border: none; font-family: var(--sans);
+  text-decoration: underline;
+}
+.logout-btn:hover { color: #fff; }
+
+.main { max-width: 1100px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+/* ── SCHEDULE PICKER ── */
+.picker-section { margin-bottom: 2rem; }
+.picker-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; }
+.picker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.schedule-card {
+  background: var(--card); border: 2px solid var(--border);
+  border-radius: 12px; padding: 16px 18px; cursor: pointer;
+  transition: all 0.13s; text-align: left;
+}
+.schedule-card:hover { border-color: var(--sky); box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.schedule-card.active { border-color: var(--navy); background: var(--navy); color: #fff; }
+.schedule-card .sc-name { font-weight: 600; font-size: 15px; margin-bottom: 3px; }
+.schedule-card .sc-dates { font-size: 13px; opacity: 0.7; }
+.schedule-card .sc-count { font-size: 12px; margin-top: 6px; opacity: 0.6; }
+.schedule-card.active .sc-dates,
+.schedule-card.active .sc-count { opacity: 0.65; }
+
+/* ── TOOLBAR ── */
+.toolbar {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap;
+}
+.toolbar-title { font-family: var(--serif); font-size: 20px; font-weight: normal; color: var(--navy); flex: 1; }
+.add-btn {
+  padding: 9px 20px; background: var(--navy); color: #fff;
+  border: none; border-radius: 8px; font-size: 14px; font-weight: 500;
+  cursor: pointer; font-family: var(--sans); white-space: nowrap;
+}
+.add-btn:hover { opacity: 0.85; }
+.refresh-btn {
+  padding: 9px 16px; background: var(--card); color: var(--muted);
+  border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px;
+  cursor: pointer; font-family: var(--sans); white-space: nowrap;
+}
+.refresh-btn:hover { border-color: var(--sky); color: var(--navy); }
+
+/* ── STATUS BAR ── */
+.status-bar {
+  font-size: 13px; padding: 8px 14px; border-radius: 8px; margin-bottom: 1rem;
+  display: none; align-items: center; gap: 8px;
+}
+.status-bar.info    { display: flex; background: var(--sky-lt); color: var(--navy); border: 1px solid #c5dce8; }
+.status-bar.success { display: flex; background: var(--green-lt); color: #1a5c3a; border: 1px solid #b0d9c5; }
+.status-bar.error   { display: flex; background: var(--red-lt); color: var(--red); border: 1px solid #f5c6c8; }
+
+/* ── DAY SECTIONS ── */
+.day-section { margin-bottom: 2rem; }
+.day-header {
+  font-family: var(--serif); font-size: 17px; font-weight: normal;
+  color: var(--navy); border-bottom: 2px solid var(--crimson);
+  padding-bottom: 8px; margin-bottom: 12px;
+  display: flex; align-items: baseline; gap: 10px;
+}
+.day-count-badge {
+  font-family: var(--sans); font-size: 12px; color: var(--muted); font-weight: normal;
+}
+
+/* ── EVENT ROW ── */
+.event-row {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 8px; overflow: hidden;
+  transition: box-shadow 0.13s;
+}
+.event-row:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+.event-row-main {
+  display: grid; grid-template-columns: 90px 1fr auto;
+  gap: 0; align-items: stretch;
+}
+.event-time {
+  background: var(--bg); border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 12px 14px; font-size: 13px; font-weight: 600; color: var(--navy);
+  line-height: 1.4; text-align: center; flex-shrink: 0;
+}
+.event-time .end-time { font-weight: 400; color: var(--muted); font-size: 12px; }
+.event-info { padding: 12px 16px; }
+.event-title { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+.event-location { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+.event-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+.ev-tag {
+  font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500;
+}
+.ev-tag-featured { background: #e8ecf8; color: #1a2a5e; }
+.ev-tag-affinity { background: #fde8e0; color: #8b3020; }
+.ev-tag-other    { background: #eeeeee; color: #555; }
+.ev-tag-class    { background: #fdf0f0; color: #8b2234; }
+.ev-tag-fitness  { background: #e8f0f0; color: #3a5050; }
+.ev-tag-sport    { background: #fdf6e0; color: #6a5000; }
+.ev-tag-family   { background: #e8f5ee; color: #2e7d5e; }
+.ev-tag-sub      { background: var(--gold-lt); color: #7a5500; }
+.event-desc-preview { font-size: 12px; color: var(--muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 500px; }
+.event-actions {
+  display: flex; flex-direction: column; gap: 0; border-left: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.ev-action-btn {
+  flex: 1; padding: 0 18px; border: none; background: none;
+  cursor: pointer; font-size: 13px; font-family: var(--sans);
+  color: var(--muted); transition: all 0.12s; white-space: nowrap;
+}
+.ev-action-btn:hover { background: var(--bg); }
+.ev-action-btn.edit:hover { color: var(--navy); }
+.ev-action-btn.delete { border-top: 1px solid var(--border); }
+.ev-action-btn.delete:hover { color: var(--red); background: var(--red-lt); }
+
+/* ── EDIT PANEL ── */
+.edit-panel {
+  background: #f8fafc; border-top: 1px solid var(--border);
+  padding: 16px; display: none;
+}
+.edit-panel.open { display: block; }
+.edit-panel h4 { font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.07em; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+.form-grid.full  { grid-template-columns: 1fr; }
+.form-field { display: flex; flex-direction: column; gap: 4px; }
+.form-field label { font-size: 11px; color: var(--muted); letter-spacing: 0.07em; text-transform: uppercase; }
+.form-field input, .form-field select, .form-field textarea {
+  font-size: 14px; padding: 8px 10px; border: 1.5px solid var(--border);
+  border-radius: 6px; background: #fff; color: var(--text);
+  font-family: var(--sans); outline: none; transition: border-color 0.12s;
+}
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: var(--sky); }
+.form-field textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+.edit-actions { display: flex; gap: 8px; margin-top: 12px; }
+.save-btn {
+  padding: 9px 22px; background: var(--green); color: #fff;
+  border: none; border-radius: 6px; font-size: 14px; cursor: pointer;
+  font-family: var(--sans); font-weight: 500;
+}
+.save-btn:hover { opacity: 0.85; }
+.save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.cancel-btn {
+  padding: 9px 15px; background: none; color: var(--muted);
+  border: 1.5px solid var(--border); border-radius: 6px; font-size: 14px;
+  cursor: pointer; font-family: var(--sans);
+}
+.cancel-btn:hover { background: #fff; }
+
+/* ── ADD EVENT FORM ── */
+.add-form-wrap {
+  background: var(--card); border: 2px dashed var(--border);
+  border-radius: 12px; padding: 20px; margin-bottom: 2rem; display: none;
+}
+.add-form-wrap.open { display: block; }
+.add-form-wrap h3 { font-size: 16px; font-weight: 600; color: var(--navy); margin-bottom: 16px; }
+
+/* ── EMPTY / LOADING ── */
+.empty { text-align: center; padding: 3rem; color: var(--muted); font-size: 15px; }
+.spinner {
+  display: inline-block; width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: -3px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── CONFIRM DIALOG ── */
+.confirm-bg {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  z-index: 200; align-items: center; justify-content: center;
+}
+.confirm-bg.open { display: flex; }
+.confirm-box {
+  background: #fff; border-radius: 12px; padding: 1.75rem;
+  max-width: 380px; width: 90%; text-align: center;
+}
+.confirm-box h3 { font-size: 17px; color: var(--navy); margin-bottom: 8px; }
+.confirm-box p  { font-size: 14px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+.confirm-actions { display: flex; gap: 10px; justify-content: center; }
+.confirm-yes { padding: 9px 22px; background: var(--red); color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-family: var(--sans); }
+.confirm-no  { padding: 9px 18px; background: none; color: var(--muted); border: 1.5px solid var(--border); border-radius: 6px; font-size: 14px; cursor: pointer; font-family: var(--sans); }
+
+@media (max-width: 640px) {
+  .picker-grid { grid-template-columns: 1fr; }
+  .form-grid, .form-grid.three { grid-template-columns: 1fr; }
+  .event-row-main { grid-template-columns: 70px 1fr auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo"><strong>W&L</strong> Alumni Engagement</div>
+    <div class="login-sub">Schedule Administration</div>
+    <input type="password" id="pwInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="login-btn" onclick="doLogin()">Sign in</button>
+    <div class="login-error" id="loginErr">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-title"><strong>W&L</strong> Schedule Admin</div>
+    <span class="topbar-badge" id="topBadge">No schedule selected</span>
+    <button class="logout-btn" onclick="doLogout()">Sign out</button>
+  </div>
+
+  <div class="main">
+
+    <!-- SCHEDULE PICKER -->
+    <div class="picker-section">
+      <div class="picker-label">Select a schedule to manage</div>
+      <div class="picker-grid">
+        <div class="schedule-card" onclick="selectSchedule('aw26')">
+          <div class="sc-name">Alumni Weekend 2026</div>
+          <div class="sc-dates">April 30 – May 3, 2026</div>
+          <div class="sc-count" id="aw26-count">—</div>
+        </div>
+        <div class="schedule-card" onclick="selectSchedule('yaw26')">
+          <div class="sc-name">Young Alumni Weekend 2026</div>
+          <div class="sc-dates">September 25–27, 2026</div>
+          <div class="sc-count" id="yaw26-count">—</div>
+        </div>
+        <div class="schedule-card" onclick="selectSchedule('fsf26')">
+          <div class="sc-name">Five-Star Festival 2026</div>
+          <div class="sc-dates">September 18–19, 2026</div>
+          <div class="sc-count" id="fsf26-count">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATUS -->
+    <div class="status-bar" id="statusBar"></div>
+
+    <!-- EDITOR AREA -->
+    <div id="editorArea" style="display:none;">
+      <div class="toolbar">
+        <div class="toolbar-title" id="editorTitle">—</div>
+        <button class="refresh-btn" onclick="loadEvents()">↻ Refresh</button>
+        <button class="add-btn" onclick="toggleAddForm()">+ Add event</button>
+      </div>
+
+      <!-- ADD FORM -->
+      <div class="add-form-wrap" id="addFormWrap">
+        <h3>New event</h3>
+        <div class="form-grid">
+          <div class="form-field"><label>Event title *</label><input id="af-title" placeholder="e.g. Welcome Reception" /></div>
+          <div class="form-field"><label>Location</label><input id="af-location" placeholder="e.g. Evans Hall" /></div>
+        </div>
+        <div class="form-grid three">
+          <div class="form-field"><label>Date *</label><select id="af-date"></select></div>
+          <div class="form-field"><label>Start time *</label><input id="af-start" placeholder="e.g. 6:30 PM" /></div>
+          <div class="form-field"><label>End time</label><input id="af-end" placeholder="e.g. 9:00 PM" /></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-field"><label>Category</label>
+            <select id="af-cat">
+              <option value="featured">Featured</option>
+              <option value="class">Class Specific</option>
+              <option value="affinity">Affinity</option>
+              <option value="fitness">Fitness</option>
+              <option value="sport">Sporting Event</option>
+              <option value="other">Other</option>
+              <option value="family">Family Friendly</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Sub-label</label><input id="af-sub" placeholder="e.g. By Invitation Only" /></div>
+        </div>
+        <div class="form-grid full">
+          <div class="form-field"><label>Description</label><textarea id="af-desc" placeholder="Event description…"></textarea></div>
+        </div>
+        <div class="edit-actions">
+          <button class="save-btn" id="addSaveBtn" onclick="addEvent()">Add event</button>
+          <button class="cancel-btn" onclick="toggleAddForm()">Cancel</button>
+        </div>
+      </div>
+
+      <!-- EVENTS LIST -->
+      <div id="eventsList"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-bg" id="confirmBg">
+  <div class="confirm-box">
+    <h3>Delete event?</h3>
+    <p id="confirmMsg"></p>
+    <div class="confirm-actions">
+      <button class="confirm-yes" id="confirmYes">Delete</button>
+      <button class="confirm-no" onclick="closeConfirm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const PASSWORD   = 'WLUacs2026';
+const WORKER_URL = 'https://aw26schedule.tmeeker.workers.dev/';
+
+const SCHEDULES = {
+  aw26: {
+    name:    'Alumni Weekend 2026',
+    boardId: '18407567492',
+    days:    ['Thursday, April 30','Friday, May 1','Saturday, May 2','Sunday, May 3'],
+    cols: {
+      date:     'text_mm26t2ks',
+      start:    'text_mm26ew9e',
+      end:      'text_mm26es9f',
+      location: 'text_mm26akqn',
+      cat:      'dropdown_mm26zmmb',
+      classes:  'text_mm264cbe',
+      sub:      'text_mm26ef43',
+      desc:     'text_mm26trg4',
+    }
+  },
+  yaw26: {
+    name:    'Young Alumni Weekend 2026',
+    boardId: '18414315770',
+    days:    ['Friday, September 25','Saturday, September 26','Sunday, September 27'],
+    cols: {
+      date:     'text_mm3j92dc',
+      start:    'text_mm3j1gqa',
+      end:      'text_mm3jn4et',
+      location: 'text_mm3j1bee',
+      cat:      'dropdown_mm3jg46a',
+      classes:  'text_mm3jfn9h',
+      sub:      'text_mm3jwc04',
+      desc:     'long_text_mm3jp3vc',
+    }
+  },
+  fsf26: {
+    name:    'Five-Star Festival 2026',
+    boardId: '18414321921',
+    days:    ['Friday, September 18','Saturday, September 19'],
+    cols: {
+      date:     'text_mm3jpdk',
+      start:    'text_mm3jrqh2',
+      end:      'text_mm3jkhhz',
+      location: 'text_mm3j91dg',
+      cat:      'dropdown_mm3jqm9h',
+      classes:  'text_mm3j29t2',
+      sub:      'text_mm3jrx8t',
+      desc:     'long_text_mm3j8ery',
+    }
+  }
+};
+
+let currentSchedule = null;
+let currentEvents   = [];
+let confirmCallback = null;
+
+// ── AUTH ──
+function doLogin() {
+  const pw = document.getElementById('pwInput').value;
+  if (pw === PASSWORD) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('loginErr').style.display = 'none';
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  }
+}
+
+function doLogout() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('pwInput').value = '';
+  currentSchedule = null;
+  currentEvents   = [];
+  document.querySelectorAll('.schedule-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('editorArea').style.display = 'none';
+  document.getElementById('topBadge').textContent = 'No schedule selected';
+}
+
+// ── SCHEDULE PICKER ──
+function selectSchedule(key) {
+  currentSchedule = key;
+  document.querySelectorAll('.schedule-card').forEach((c, i) => {
+    c.classList.toggle('active', Object.keys(SCHEDULES)[i] === key);
+  });
+  const sch = SCHEDULES[key];
+  document.getElementById('topBadge').textContent = sch.name;
+  document.getElementById('editorTitle').textContent = sch.name;
+  document.getElementById('editorArea').style.display = 'block';
+  // Populate date dropdown
+  const sel = document.getElementById('af-date');
+  sel.innerHTML = sch.days.map(d => `<option value="${d}">${d}</option>`).join('');
+  hideAddForm();
+  loadEvents();
+}
+
+// ── API ──
+async function apiQuery(query) {
+  const sch = SCHEDULES[currentSchedule];
+  const res = await fetch(WORKER_URL + '?board=' + sch.boardId, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query })
+  });
+  return res.json();
+}
+
+async function loadEvents() {
+  if (!currentSchedule) return;
+  const sch = SCHEDULES[currentSchedule];
+  showStatus('info', 'Loading events…');
+
+  const query = `{ boards(ids: ${sch.boardId}) { items_page(limit: 200) { items { id name column_values { id text } } } } }`;
+
+  try {
+    const res = await fetch(WORKER_URL + '?board=' + sch.boardId);
+    const data = await res.json();
+    const items = (data.data || data).boards[0].items_page.items;
+    currentEvents = items.map(item => {
+      const cv = {};
+      item.column_values.forEach(c => { cv[c.id] = c.text || ''; });
+      return {
+        _id:      item.id,
+        title:    item.name,
+        date:     (cv[sch.cols.date]     || '').trim(),
+        start:    (cv[sch.cols.start]    || '').trim(),
+        end:      (cv[sch.cols.end]      || '').trim(),
+        location: (cv[sch.cols.location] || '').trim(),
+        cat:      (cv[sch.cols.cat]      || 'featured').trim().toLowerCase(),
+        classes:  (cv[sch.cols.classes]  || 'Campus-Wide').trim(),
+        sub:      (cv[sch.cols.sub]      || '').trim(),
+        desc:     (cv[sch.cols.desc]     || '').trim(),
+      };
+    });
+
+    // Sort by day then time
+    const dayOrder = sch.days;
+    currentEvents.sort((a, b) => {
+      const di = dayOrder.indexOf(a.date) - dayOrder.indexOf(b.date);
+      if (di !== 0) return di;
+      return timeToMin(a.start) - timeToMin(b.start);
+    });
+
+    renderEvents();
+    updateCount(currentSchedule, currentEvents.length);
+    showStatus('success', `Loaded ${currentEvents.length} events.`);
+    setTimeout(hideStatus, 3000);
+  } catch(err) {
+    showStatus('error', 'Could not load events: ' + err.message);
+  }
+}
+
+function timeToMin(t) {
+  if (!t || t === 'TBA') return -1;
+  const m = t.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!m) return 9999;
+  let h = parseInt(m[1]), min = parseInt(m[2]);
+  const pm = m[3].toUpperCase() === 'PM';
+  if (pm && h !== 12) h += 12;
+  if (!pm && h === 12) h = 0;
+  return h * 60 + min;
+}
+
+// ── RENDER ──
+function renderEvents() {
+  const sch = SCHEDULES[currentSchedule];
+  const container = document.getElementById('eventsList');
+
+  if (!currentEvents.length) {
+    container.innerHTML = '<div class="empty">No events found. Add one above.</div>';
+    return;
+  }
+
+  // Group by day
+  const byDay = {};
+  currentEvents.forEach(e => {
+    if (!byDay[e.date]) byDay[e.date] = [];
+    byDay[e.date].push(e);
+  });
+
+  container.innerHTML = sch.days.filter(d => byDay[d]).map(day => {
+    const evs = byDay[day];
+    return `<div class="day-section">
+      <div class="day-header">${day} <span class="day-count-badge">${evs.length} event${evs.length!==1?'s':''}</span></div>
+      ${evs.map(renderRow).join('')}
+    </div>`;
+  }).join('');
+}
+
+function renderRow(e) {
+  const catTag = `<span class="ev-tag ev-tag-${e.cat}">${catLabel(e.cat)}</span>`;
+  const subTag = e.sub ? `<span class="ev-tag ev-tag-sub">${esc(e.sub)}</span>` : '';
+  const desc   = e.desc ? `<div class="event-desc-preview">${esc(e.desc.replace(/<[^>]+>/g,''))}</div>` : '';
+  return `<div class="event-row" id="row-${e._id}">
+    <div class="event-row-main">
+      <div class="event-time">
+        ${esc(e.start)}<br><span class="end-time">${esc(e.end)}</span>
+      </div>
+      <div class="event-info">
+        <div class="event-title">${esc(e.title)}</div>
+        ${e.location ? `<div class="event-location">📍 ${esc(e.location)}</div>` : ''}
+        <div class="event-meta">${catTag}${subTag}</div>
+        ${desc}
+      </div>
+      <div class="event-actions">
+        <button class="ev-action-btn edit" onclick="openEdit('${e._id}')">✏ Edit</button>
+        <button class="ev-action-btn delete" onclick="confirmDelete('${e._id}')">✕ Delete</button>
+      </div>
+    </div>
+    <div class="edit-panel" id="edit-${e._id}">
+      ${buildEditForm(e)}
+    </div>
+  </div>`;
+}
+
+function buildEditForm(e) {
+  const sch = SCHEDULES[currentSchedule];
+  const catOpts = ['featured','class','affinity','fitness','sport','other','family']
+    .map(k => `<option value="${k}" ${e.cat===k?'selected':''}>${catLabel(k)}</option>`).join('');
+  const dateOpts = sch.days
+    .map(d => `<option value="${d}" ${e.date===d?'selected':''}>${d}</option>`).join('');
+  return `
+    <h4>Editing event</h4>
+    <div class="form-grid">
+      <div class="form-field"><label>Title *</label><input id="ef-title-${e._id}" value="${esc(e.title)}" /></div>
+      <div class="form-field"><label>Location</label><input id="ef-loc-${e._id}" value="${esc(e.location)}" /></div>
+    </div>
+    <div class="form-grid three">
+      <div class="form-field"><label>Date</label><select id="ef-date-${e._id}">${dateOpts}</select></div>
+      <div class="form-field"><label>Start time</label><input id="ef-start-${e._id}" value="${esc(e.start)}" /></div>
+      <div class="form-field"><label>End time</label><input id="ef-end-${e._id}" value="${esc(e.end)}" /></div>
+    </div>
+    <div class="form-grid">
+      <div class="form-field"><label>Category</label><select id="ef-cat-${e._id}">${catOpts}</select></div>
+      <div class="form-field"><label>Sub-label</label><input id="ef-sub-${e._id}" value="${esc(e.sub)}" /></div>
+    </div>
+    <div class="form-grid full">
+      <div class="form-field"><label>Description</label><textarea id="ef-desc-${e._id}">${esc(e.desc)}</textarea></div>
+    </div>
+    <div class="edit-actions">
+      <button class="save-btn" id="save-btn-${e._id}" onclick="saveEdit('${e._id}')">Save changes</button>
+      <button class="cancel-btn" onclick="closeEdit('${e._id}')">Cancel</button>
+    </div>`;
+}
+
+function catLabel(k) {
+  return {featured:'Featured',class:'Class Specific',affinity:'Affinity',fitness:'Fitness',sport:'Sporting',other:'Other',family:'Family Friendly'}[k] || k;
+}
+
+// ── EDIT ──
+function openEdit(id) {
+  // Close any other open panels
+  document.querySelectorAll('.edit-panel.open').forEach(p => {
+    if (p.id !== 'edit-'+id) p.classList.remove('open');
+  });
+  document.getElementById('edit-'+id).classList.toggle('open');
+}
+
+function closeEdit(id) {
+  document.getElementById('edit-'+id).classList.remove('open');
+}
+
+async function saveEdit(id) {
+  const sch = SCHEDULES[currentSchedule];
+  const btn = document.getElementById('save-btn-'+id);
+  const title = document.getElementById('ef-title-'+id).value.trim();
+  if (!title) { alert('Title is required.'); return; }
+
+  const colVals = {
+    [sch.cols.date]:     document.getElementById('ef-date-'+id).value,
+    [sch.cols.start]:    document.getElementById('ef-start-'+id).value.trim(),
+    [sch.cols.end]:      document.getElementById('ef-end-'+id).value.trim(),
+    [sch.cols.location]: document.getElementById('ef-loc-'+id).value.trim(),
+    [sch.cols.cat]:      document.getElementById('ef-cat-'+id).value,
+    [sch.cols.sub]:      document.getElementById('ef-sub-'+id).value.trim(),
+    [sch.cols.desc]:     document.getElementById('ef-desc-'+id).value.trim(),
+  };
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving…';
+
+  const colValsJson = JSON.stringify(colVals).replace(/"/g, '\\"');
+  const mutation = `mutation {
+    change_multiple_column_values(
+      board_id: ${sch.boardId},
+      item_id: ${id},
+      column_values: "${colValsJson}"
+    ) { id }
+    change_simple_column_value(
+      board_id: ${sch.boardId},
+      item_id: ${id},
+      column_id: "name",
+      value: "${title.replace(/"/g,'\\"')}"
+    ) { id }
+  }`;
+
+  try {
+    const res = await fetch(WORKER_URL + '?board=' + sch.boardId, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: mutation })
+    });
+    const data = await res.json();
+    if (data.errors) throw new Error(data.errors[0].message);
+    showStatus('success', `"${title}" updated successfully.`);
+    setTimeout(hideStatus, 3000);
+    await loadEvents();
+  } catch(err) {
+    showStatus('error', 'Save failed: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = 'Save changes';
+  }
+}
+
+// ── ADD ──
+function toggleAddForm() {
+  const wrap = document.getElementById('addFormWrap');
+  wrap.classList.toggle('open');
+  if (wrap.classList.contains('open')) {
+    document.getElementById('af-title').focus();
+  }
+}
+
+function hideAddForm() {
+  document.getElementById('addFormWrap').classList.remove('open');
+  ['af-title','af-location','af-start','af-end','af-sub','af-desc'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+async function addEvent() {
+  const sch = SCHEDULES[currentSchedule];
+  const title = document.getElementById('af-title').value.trim();
+  const start = document.getElementById('af-start').value.trim();
+  if (!title || !start) { alert('Title and start time are required.'); return; }
+
+  const colVals = {
+    [sch.cols.date]:     document.getElementById('af-date').value,
+    [sch.cols.start]:    start,
+    [sch.cols.end]:      document.getElementById('af-end').value.trim(),
+    [sch.cols.location]: document.getElementById('af-location').value.trim(),
+    [sch.cols.cat]:      document.getElementById('af-cat').value,
+    [sch.cols.sub]:      document.getElementById('af-sub').value.trim(),
+    [sch.cols.desc]:     document.getElementById('af-desc').value.trim(),
+    [sch.cols.classes]:  'Campus-Wide',
+  };
+
+  const btn = document.getElementById('addSaveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Adding…';
+
+  const colValsJson = JSON.stringify(colVals).replace(/"/g, '\\"');
+  const mutation = `mutation {
+    create_item(
+      board_id: ${sch.boardId},
+      item_name: "${title.replace(/"/g,'\\"')}",
+      column_values: "${colValsJson}"
+    ) { id }
+  }`;
+
+  try {
+    const res = await fetch(WORKER_URL + '?board=' + sch.boardId, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: mutation })
+    });
+    const data = await res.json();
+    if (data.errors) throw new Error(data.errors[0].message);
+    showStatus('success', `"${title}" added successfully.`);
+    setTimeout(hideStatus, 3000);
+    hideAddForm();
+    await loadEvents();
+  } catch(err) {
+    showStatus('error', 'Could not add event: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Add event';
+  }
+}
+
+// ── DELETE ──
+function confirmDelete(id) {
+  const e = currentEvents.find(ev => ev._id === id);
+  if (!e) return;
+  document.getElementById('confirmMsg').textContent = `"${e.title}" will be permanently removed from Monday and the live schedule.`;
+  document.getElementById('confirmYes').onclick = () => deleteEvent(id);
+  document.getElementById('confirmBg').classList.add('open');
+}
+
+function closeConfirm() {
+  document.getElementById('confirmBg').classList.remove('open');
+}
+
+async function deleteEvent(id) {
+  closeConfirm();
+  const sch = SCHEDULES[currentSchedule];
+  const e = currentEvents.find(ev => ev._id === id);
+  showStatus('info', `Deleting "${e?.title}"…`);
+
+  const mutation = `mutation { delete_item(item_id: ${id}) { id } }`;
+
+  try {
+    const res = await fetch(WORKER_URL + '?board=' + sch.boardId, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: mutation })
+    });
+    const data = await res.json();
+    if (data.errors) throw new Error(data.errors[0].message);
+    showStatus('success', `"${e?.title}" deleted.`);
+    setTimeout(hideStatus, 3000);
+    await loadEvents();
+  } catch(err) {
+    showStatus('error', 'Delete failed: ' + err.message);
+  }
+}
+
+// ── STATUS ──
+function showStatus(type, msg) {
+  const bar = document.getElementById('statusBar');
+  bar.className = 'status-bar ' + type;
+  bar.textContent = msg;
+}
+function hideStatus() {
+  document.getElementById('statusBar').className = 'status-bar';
+}
+
+// ── HELPERS ──
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function updateCount(key, n) {
+  const el = document.getElementById(key+'-count');
+  if (el) el.textContent = n + ' event' + (n!==1?'s':'');
+}
+</script>
+</body>
+</html>
