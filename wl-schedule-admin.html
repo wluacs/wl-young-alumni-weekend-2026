@@ -220,6 +220,49 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
 }
 .cancel-btn:hover { background: #fff; }
 
+/* ── SHARE LINKS ── */
+.share-wrap {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px 20px; margin-bottom: 1.5rem; display: none;
+}
+.share-wrap.open { display: block; }
+.share-wrap h3 { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 14px; }
+.share-group { margin-bottom: 16px; }
+.share-group:last-child { margin-bottom: 0; }
+.share-group-label {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--muted); margin-bottom: 6px;
+}
+.share-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg); border-radius: 6px; padding: 8px 12px; margin-bottom: 5px;
+}
+.share-row:last-child { margin-bottom: 0; }
+.share-row-name { font-size: 13px; font-weight: 500; color: var(--navy); min-width: 110px; flex-shrink: 0; }
+.share-row-url {
+  font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted);
+  flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.share-copy {
+  font-size: 12px; padding: 4px 12px; border: 1.5px solid var(--border);
+  border-radius: 5px; background: #fff; cursor: pointer; color: var(--muted);
+  font-family: var(--sans); transition: all 0.12s; flex-shrink: 0;
+}
+.share-copy:hover { border-color: var(--sky); color: var(--navy); }
+.share-copy.copied { background: var(--green-lt); border-color: var(--green); color: var(--green); }
+.share-open {
+  font-size: 12px; padding: 4px 10px; border: 1.5px solid var(--border);
+  border-radius: 5px; background: #fff; color: var(--muted); text-decoration: none;
+  transition: all 0.12s; flex-shrink: 0;
+}
+.share-open:hover { border-color: var(--sky); color: var(--navy); }
+.share-embed {
+  font-family: ui-monospace, monospace; font-size: 11.5px;
+  background: var(--bg); border-radius: 6px; padding: 10px 12px;
+  color: var(--muted); line-height: 1.5; word-break: break-all;
+  margin-bottom: 6px;
+}
+
 /* ── ADD EVENT FORM ── */
 .add-form-wrap {
   background: var(--card); border: 2px dashed var(--border);
@@ -312,8 +355,15 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
     <div id="editorArea" style="display:none;">
       <div class="toolbar">
         <div class="toolbar-title" id="editorTitle">—</div>
+        <button class="refresh-btn" onclick="toggleShare()">🔗 Share links</button>
         <button class="refresh-btn" onclick="loadEvents()">↻ Refresh</button>
         <button class="add-btn" onclick="toggleAddForm()">+ Add event</button>
+      </div>
+
+      <!-- SHARE LINKS -->
+      <div class="share-wrap" id="shareWrap">
+        <h3>Links for this schedule</h3>
+        <div id="shareList"></div>
       </div>
 
       <!-- ADD FORM -->
@@ -379,6 +429,8 @@ const SCHEDULES = {
   aw26: {
     name:    'Alumni Weekend 2026',
     boardId: '18407567492',
+    url:     'https://wluacs.github.io/wl-alumni-weekend-2026/wl-alumni-weekend-2026.html',
+    classes: ['1976','1981','1986','1991','1996','2001','2006','2011'],
     days:    ['Thursday, April 30','Friday, May 1','Saturday, May 2','Sunday, May 3'],
     cols: {
       date:     'text_mm26t2ks',
@@ -394,6 +446,8 @@ const SCHEDULES = {
   yaw26: {
     name:    'Young Alumni Weekend 2026',
     boardId: '18414315770',
+    url:     'https://wluacs.github.io/wl-young-alumni-weekend-2026/wl-young-alumni-weekend-2026.html',
+    classes: [],
     days:    ['Friday, September 25','Saturday, September 26','Sunday, September 27'],
     cols: {
       date:     'text_mm3j92dc',
@@ -409,6 +463,8 @@ const SCHEDULES = {
   fsf26: {
     name:    'Five-Star Festival 2026',
     boardId: '18414321921',
+    url:     'https://wluacs.github.io/wlu-five-star-festival-2026/wl-five-star-festival-2026.html',
+    classes: [],
     days:    ['Thursday, September 17','Friday, September 18','Saturday, September 19'],
     cols: {
       date:     'text_mm3jpdk',
@@ -466,7 +522,65 @@ function selectSchedule(key) {
   const sel = document.getElementById('af-date');
   sel.innerHTML = sch.days.map(d => `<option value="${d}">${d}</option>`).join('');
   hideAddForm();
+  document.getElementById('shareWrap').classList.remove('open');
+  buildShareLinks();
   loadEvents();
+}
+
+// ── SHARE LINKS ──
+function toggleShare() {
+  document.getElementById('shareWrap').classList.toggle('open');
+}
+
+function buildShareLinks() {
+  const sch = SCHEDULES[currentSchedule];
+  if (!sch || !sch.url) return;
+  const base = sch.url;
+
+  const row = (name, url) => `
+    <div class="share-row">
+      <span class="share-row-name">${name}</span>
+      <span class="share-row-url">${url}</span>
+      <button class="share-copy" onclick="copyShare(this, '${url}')">Copy</button>
+      <a class="share-open" href="${url}" target="_blank" rel="noopener">Open</a>
+    </div>`;
+
+  const embedCode = `<iframe src="${base}?embed=1" width="100%" height="860" frameborder="0" style="border:none;"></iframe>`;
+
+  let html = `
+    <div class="share-group">
+      <div class="share-group-label">Public schedule</div>
+      ${row('Full schedule', base + '?public=1')}
+    </div>
+
+    <div class="share-group">
+      <div class="share-group-label">Squarespace embed code</div>
+      <div class="share-embed">${escHtml(embedCode)}</div>
+      <button class="share-copy" onclick="copyShare(this, ${JSON.stringify(embedCode).replace(/"/g,'&quot;')})">Copy embed code</button>
+    </div>`;
+
+  if (sch.classes && sch.classes.length) {
+    html += `
+    <div class="share-group">
+      <div class="share-group-label">Class-specific links</div>
+      ${sch.classes.map(c => row('Class of ' + c, base + '?public=1&class=' + c)).join('')}
+    </div>`;
+  }
+
+  document.getElementById('shareList').innerHTML = html;
+}
+
+function copyShare(btn, text) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('copied'); }, 1800);
+  });
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 // ── API ──
