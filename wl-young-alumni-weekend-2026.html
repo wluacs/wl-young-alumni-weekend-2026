@@ -519,84 +519,69 @@ body.faq-only .page-body { padding-top: 0.5rem; }
   .card-meta-item { font-size: 13px; }
 }
 
-/* ═══════════════════════════════════════
-   FAQ — editorial accordion
-   Matches the sectioned, hairline-ruled FAQ on the event website:
-   headings set in the display serif, questions as open rows rather
-   than boxed cards, answers indented under the question.
-═══════════════════════════════════════ */
 
+/* ═══════════════════════════════════════
+   FAQ — card accordion
+   Same card language as the schedule: white rounded cards on whatever
+   background sits behind them, so the block reads as part of the host
+   page rather than a panel dropped on top of it.
+═══════════════════════════════════════ */
 .faq-wrap { gap: 0; }
-.faq-group { margin-bottom: 2.5rem; }
+.faq-group { margin-bottom: 2rem; }
+.faq-group:last-child { margin-bottom: 0; }
+
 .faq-group-heading {
-  font-family: var(--serif); font-size: 21px; font-weight: normal;
-  color: var(--navy); margin-bottom: 2px; padding-bottom: 0;
-  border-bottom: none; letter-spacing: 0.01em;
+  font-family: var(--serif); font-size: 20px; font-weight: normal;
+  color: var(--navy); margin-bottom: 12px; padding-bottom: 7px;
+  border-bottom: 3px solid var(--crimson);
 }
 
 .faq-item {
-  background: none; border: none; border-radius: 0;
-  border-bottom: 1px solid var(--border-lt); margin-bottom: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  margin-bottom: 10px;
+  overflow: hidden;
 }
-.faq-group .faq-item { margin-bottom: 0; }
-.faq-group .faq-item:first-of-type { border-top: 2px solid var(--navy); }
+.faq-group .faq-item:first-of-type { border-top: 1px solid var(--border); }
 
 .faq-q {
-  padding: 16px 4px; font-size: 16px; font-weight: 500;
-  color: var(--navy); gap: 16px; align-items: flex-start;
+  padding: 15px 18px; font-size: 16px; font-weight: 600;
+  color: var(--navy); gap: 14px; align-items: flex-start;
 }
-.faq-q:hover { background: none; color: var(--crimson); }
+.faq-q:hover { background: var(--sky-pale); }
 .faq-q:focus-visible { outline: 2px solid var(--sky); outline-offset: -2px; }
-.faq-item.open .faq-q { font-weight: 600; }
 
-.faq-chevron { margin-top: 4px; opacity: 0.4; }
-.faq-item.open .faq-chevron { opacity: 0.7; }
+.faq-chevron { margin-top: 4px; opacity: 0.45; }
+.faq-item.open .faq-chevron { opacity: 0.75; }
+.faq-item.open .faq-q { border-bottom: 1px solid var(--border-lt); }
 
 .faq-a {
-  padding: 0 4px 20px 0; max-width: 68ch;
-  font-size: 15.5px; line-height: 1.7; color: var(--text-mid);
+  padding: 14px 18px 16px; max-width: 68ch;
+  font-size: 15.5px; line-height: 1.68; color: var(--text-mid);
 }
-.faq-a p  { margin-bottom: 12px; }
-.faq-a ul { margin: 0 0 12px 18px; }
-.faq-a li { margin-bottom: 7px; }
-.faq-a a  { color: var(--crimson); text-decoration: underline; text-underline-offset: 2px; }
-.faq-a a:hover { text-decoration-thickness: 2px; }
+.faq-a p  { margin-bottom: 11px; }
+.faq-a p:last-child, .faq-a ul:last-child { margin-bottom: 0; }
+.faq-a ul { margin: 0 0 11px 18px; }
+.faq-a li { margin-bottom: 6px; }
+.faq-a strong { color: var(--navy); }
+.faq-a a { color: var(--crimson); text-decoration: underline; text-underline-offset: 2px; }
 
-@media (prefers-reduced-motion: reduce) {
-  .faq-chevron { transition: none; }
-}
-@media (max-width: 580px) {
-  .faq-q { font-size: 15px; padding: 14px 2px; }
-  .faq-a { font-size: 15px; }
-}
-
-/* FAQ-only embed: sit on the host page's background rather than
-   drawing a panel of our own. Text is set light for the dark blue
-   section it is embedded into; add &theme=light to the URL if the
-   surrounding section is ever a pale colour. */
+/* FAQ-only embed: cards float on the host page's own background.
+   Headings are set light for a dark section; add &theme=light to the
+   URL if the surrounding section is a pale colour. */
 body.faq-only { background: transparent; }
 body.faq-only .page-body { padding-top: 0; padding-bottom: 1rem; }
-body.faq-only .faq-group-heading { color: #fff; }
-body.faq-only .faq-item { border-bottom-color: rgba(255,255,255,0.22); }
-body.faq-only .faq-group .faq-item:first-of-type { border-top-color: rgba(255,255,255,0.65); }
-body.faq-only .faq-q { color: #fff; }
-body.faq-only .faq-q:hover { color: rgba(255,255,255,0.72); }
-body.faq-only .faq-chevron { color: #fff; opacity: 0.55; }
-body.faq-only .faq-item.open .faq-chevron { opacity: 0.85; }
-body.faq-only .faq-a { color: rgba(255,255,255,0.9); }
-body.faq-only .faq-a strong { color: #fff; }
-body.faq-only .faq-a a { color: #fff; }
-body.faq-only .empty-state { color: rgba(255,255,255,0.75); }
+body.faq-only .faq-group-heading { color: #fff; border-bottom-color: rgba(255,255,255,0.5); }
+body.faq-only.faq-light .faq-group-heading { color: var(--navy); border-bottom-color: var(--crimson); }
+body.faq-only .empty-state { color: rgba(255,255,255,0.78); }
+body.faq-only.faq-light .empty-state { color: var(--text-muted); }
 
-/* pale-background override */
-body.faq-only.faq-light .faq-group-heading,
-body.faq-only.faq-light .faq-q { color: var(--navy); }
-body.faq-only.faq-light .faq-item { border-bottom-color: var(--border-lt); }
-body.faq-only.faq-light .faq-group .faq-item:first-of-type { border-top-color: var(--navy); }
-body.faq-only.faq-light .faq-chevron { color: inherit; opacity: 0.4; }
-body.faq-only.faq-light .faq-a { color: var(--text-mid); }
-body.faq-only.faq-light .faq-a strong { color: var(--navy); }
-body.faq-only.faq-light .faq-a a { color: var(--crimson); }
+@media (prefers-reduced-motion: reduce) { .faq-chevron { transition: none; } }
+@media (max-width: 580px) {
+  .faq-q { font-size: 15px; padding: 14px 15px; }
+  .faq-a { font-size: 15px; padding: 12px 15px 14px; }
+}
 </style>
 </head>
 <body>
