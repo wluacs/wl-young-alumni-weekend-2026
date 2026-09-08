@@ -220,6 +220,86 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
 }
 .cancel-btn:hover { background: #fff; }
 
+/* ── MODE SWITCH ── */
+.mode-switch {
+  display: inline-flex; gap: 0; margin-bottom: 1.25rem;
+  border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden;
+}
+.mode-btn {
+  padding: 8px 22px; font-size: 14px; font-weight: 500; border: none;
+  background: var(--card); color: var(--muted); cursor: pointer; font-family: var(--sans);
+  transition: all 0.12s;
+}
+.mode-btn + .mode-btn { border-left: 1.5px solid var(--border); }
+.mode-btn:hover { background: var(--bg); color: var(--navy); }
+.mode-btn.mode-active { background: var(--navy); color: #fff; }
+
+/* ── FAQ CATEGORY GROUPS ── */
+.faq-cat-group { margin-bottom: 1.5rem; }
+.faq-cat-heading {
+  font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--muted); margin-bottom: 8px; padding-bottom: 5px;
+  border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px;
+}
+.faq-cat-count {
+  background: var(--bg); color: var(--muted); border-radius: 10px;
+  padding: 1px 8px; font-size: 11px; letter-spacing: 0;
+}
+
+/* ── FAQ ROWS ── */
+.faq-row {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 8px; overflow: hidden;
+}
+.faq-row:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+.faq-row-main { display: grid; grid-template-columns: 60px 1fr auto; align-items: stretch; }
+.faq-order {
+  background: var(--bg); border-right: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 600; color: var(--navy);
+}
+.faq-info { padding: 12px 16px; min-width: 0; }
+.faq-q-title { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+.faq-a-preview {
+  font-size: 12.5px; color: var(--muted); line-height: 1.5;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.html-hint {
+  font-size: 12px; color: var(--muted); line-height: 1.55;
+  background: var(--bg); border-radius: 6px; padding: 9px 12px; margin-top: 4px;
+}
+
+/* ── RICH TEXT EDITOR ── */
+.rt-toolbar {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  border: 1.5px solid var(--border); border-bottom: none;
+  border-radius: 6px 6px 0 0; padding: 6px; background: var(--bg);
+}
+.rt-btn {
+  min-width: 32px; padding: 5px 10px; font-size: 13px; font-family: var(--sans);
+  border: 1px solid transparent; border-radius: 4px; background: #fff;
+  color: var(--text-mid); cursor: pointer; transition: all 0.1s; line-height: 1.2;
+}
+.rt-btn:hover { border-color: var(--border); color: var(--navy); background: #fff; }
+.rt-btn.rt-clear { margin-left: auto; color: var(--muted); background: none; }
+.rt-btn.rt-clear:hover { background: #fff; }
+.rt-editor {
+  border: 1.5px solid var(--border); border-radius: 0 0 6px 6px;
+  background: #fff; padding: 12px 14px; min-height: 170px; max-height: 420px;
+  overflow-y: auto; font-size: 14px; line-height: 1.6; color: var(--text);
+  font-family: var(--sans); outline: none;
+}
+.rt-editor:focus { border-color: var(--sky); }
+.rt-editor p  { margin: 0 0 9px; }
+.rt-editor p:last-child { margin-bottom: 0; }
+.rt-editor ul { margin: 0 0 9px 20px; }
+.rt-editor li { margin-bottom: 4px; }
+.rt-editor a  { color: var(--crimson); }
+.rt-editor:empty::before {
+  content: attr(data-placeholder); color: #aaa; pointer-events: none;
+}
+.rt-help { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
 /* ── SHARE LINKS ── */
 .share-wrap {
   background: var(--card); border: 1px solid var(--border);
@@ -353,6 +433,12 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
 
     <!-- EDITOR AREA -->
     <div id="editorArea" style="display:none;">
+
+      <div class="mode-switch">
+        <button class="mode-btn mode-active" id="mode-events" onclick="setMode('events')">Events</button>
+        <button class="mode-btn" id="mode-faqs" onclick="setMode('faqs')">FAQs</button>
+      </div>
+
       <div class="toolbar">
         <div class="toolbar-title" id="editorTitle">—</div>
         <button class="refresh-btn" onclick="toggleShare()">🔗 Share links</button>
@@ -403,6 +489,47 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
 
       <!-- EVENTS LIST -->
       <div id="eventsList"></div>
+
+      <!-- FAQ EDITOR -->
+      <div id="faqArea" style="display:none;">
+        <div class="toolbar">
+          <div class="toolbar-title">Frequently asked questions</div>
+          <button class="refresh-btn" onclick="loadFaqs()">↻ Refresh</button>
+          <button class="add-btn" onclick="toggleFaqForm()">+ Add question</button>
+        </div>
+
+        <div class="add-form-wrap" id="faqFormWrap">
+          <h3>New question</h3>
+          <div class="form-grid">
+            <div class="form-field"><label>Question *</label><input id="ff-q" placeholder="e.g. Where should I stay?" /></div>
+            <div class="form-field"><label>Category</label><select id="ff-cat"></select></div>
+          </div>
+          <div class="form-grid">
+            <div class="form-field"><label>Display order</label><input id="ff-order" type="number" placeholder="e.g. 3" /></div>
+            <div class="form-field"></div>
+          </div>
+          <div class="form-grid full">
+            <div class="form-field">
+              <label>Answer</label>
+              <div class="rt-toolbar">
+                <button type="button" class="rt-btn" onmousedown="event.preventDefault()" onclick="rtCmd('bold')" title="Bold"><strong>B</strong></button>
+                <button type="button" class="rt-btn" onmousedown="event.preventDefault()" onclick="rtCmd('italic')" title="Italic"><em>I</em></button>
+                <button type="button" class="rt-btn" onmousedown="event.preventDefault()" onclick="rtCmd('insertUnorderedList')" title="Bulleted list">&bull; List</button>
+                <button type="button" class="rt-btn" onmousedown="event.preventDefault()" onclick="rtLink()" title="Add a link">Link</button>
+                <button type="button" class="rt-btn rt-clear" onmousedown="event.preventDefault()" onclick="rtCmd('removeFormat')" title="Remove formatting">Clear</button>
+              </div>
+              <div class="rt-editor" id="ff-a" contenteditable="true" data-placeholder="Type the answer here. Use the buttons above for bold, lists and links."></div>
+            </div>
+          </div>
+          <p class="rt-help">Type normally and use the buttons above to format. Pasted text arrives unformatted, so styling from Word or a website will not carry over.</p>
+          <div class="edit-actions">
+            <button class="save-btn" id="faqAddBtn" onclick="addFaq()">Add question</button>
+            <button class="cancel-btn" onclick="toggleFaqForm()">Cancel</button>
+          </div>
+        </div>
+
+        <div id="faqList"></div>
+      </div>
     </div>
 
   </div>
@@ -431,6 +558,8 @@ const SCHEDULES = {
     boardId: '18407567492',
     url:     'https://wluacs.github.io/wl-alumni-weekend-2026/wl-alumni-weekend-2026.html',
     classes: ['1976','1981','1986','1991','1996','2001','2006','2011'],
+    faqBoardId: '18430208229',
+    faqCols: { answer: 'long_text_mm70evvf', order: 'numeric_mm701apq', cat: 'dropdown_mm70tffg' },
     days:    ['Thursday, April 30','Friday, May 1','Saturday, May 2','Sunday, May 3'],
     cols: {
       date:     'text_mm26t2ks',
@@ -448,6 +577,8 @@ const SCHEDULES = {
     boardId: '18414315770',
     url:     'https://wluacs.github.io/wl-young-alumni-weekend-2026/wl-young-alumni-weekend-2026.html',
     classes: [],
+    faqBoardId: '18430208241',
+    faqCols: { answer: 'long_text_mm70xsbz', order: 'numeric_mm704sfp', cat: 'dropdown_mm701mxa' },
     days:    ['Friday, September 25','Saturday, September 26','Sunday, September 27'],
     cols: {
       date:     'text_mm3j92dc',
@@ -465,6 +596,8 @@ const SCHEDULES = {
     boardId: '18414321921',
     url:     'https://wluacs.github.io/wlu-five-star-festival-2026/wl-five-star-festival-2026.html',
     classes: [],
+    faqBoardId: '18430208260',
+    faqCols: { answer: 'long_text_mm70c5gg', order: 'numeric_mm70msnb', cat: 'dropdown_mm70fcda' },
     days:    ['Thursday, September 17','Friday, September 18','Saturday, September 19'],
     cols: {
       date:     'text_mm3jpdk',
@@ -523,8 +656,326 @@ function selectSchedule(key) {
   sel.innerHTML = sch.days.map(d => `<option value="${d}">${d}</option>`).join('');
   hideAddForm();
   document.getElementById('shareWrap').classList.remove('open');
+  setMode('events');
   buildShareLinks();
   loadEvents();
+}
+
+// ── RICH TEXT EDITOR HELPERS ──
+function rtCmd(cmd) {
+  document.execCommand(cmd, false, null);
+}
+
+function rtLink() {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) { alert('Select the words you want to turn into a link first.'); return; }
+  const url = prompt('Link address:\n\nFor a web page use https://example.com\nFor an email use mailto:name@wlu.edu');
+  if (!url) return;
+  document.execCommand('createLink', false, url.trim());
+}
+
+/* Paste as plain text so formatting from Word or a web page never comes along. */
+document.addEventListener('paste', e => {
+  const ed = e.target.closest && e.target.closest('.rt-editor');
+  if (!ed) return;
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+  document.execCommand('insertText', false, text);
+});
+
+/* Read an editor's contents back out as tidy HTML. */
+function rtRead(id) {
+  const ed = document.getElementById(id);
+  if (!ed) return '';
+  const tmp = document.createElement('div');
+  tmp.innerHTML = ed.innerHTML;
+
+  tmp.querySelectorAll('*').forEach(el => {
+    el.removeAttribute('style');
+    el.removeAttribute('class');
+    el.removeAttribute('id');
+    if (el.tagName === 'A') {
+      el.setAttribute('target', '_blank');
+      el.setAttribute('rel', 'noopener');
+    }
+    if (el.tagName === 'B')  replaceTag(el, 'strong');
+    if (el.tagName === 'I')  replaceTag(el, 'em');
+    if (el.tagName === 'DIV') replaceTag(el, 'p');
+    if (el.tagName === 'SPAN' || el.tagName === 'FONT') el.replaceWith(...el.childNodes);
+  });
+
+  let html = tmp.innerHTML
+    .replace(/<p>(\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, '')
+    .trim();
+  return html === '<br>' ? '' : html;
+}
+
+function replaceTag(el, tag) {
+  const n = document.createElement(tag);
+  while (el.firstChild) n.appendChild(el.firstChild);
+  el.replaceWith(n);
+}
+
+/* Content saved as plain text (e.g. typed straight into Monday) shows
+   with its line breaks preserved when loaded back into the editor. */
+function toEditorHtml(t) {
+  if (!t) return '';
+  if (/<(p|ul|ol|li|br|strong|em|b|i|a)\b/i.test(t)) return t;
+  const esc = x => x.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return t.split(/\r?\n/).filter(l => l.trim()).map(l => '<p>' + esc(l.trim()) + '</p>').join('');
+}
+
+// ── MODE (Events / FAQs) ──
+let currentMode = 'events';
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('mode-events').classList.toggle('mode-active', mode === 'events');
+  document.getElementById('mode-faqs').classList.toggle('mode-active', mode === 'faqs');
+
+  const eventsOn = mode === 'events';
+  document.querySelector('#editorArea > .toolbar').style.display = eventsOn ? '' : 'none';
+  document.getElementById('addFormWrap').style.display = eventsOn ? '' : 'none';
+  document.getElementById('eventsList').style.display  = eventsOn ? '' : 'none';
+  document.getElementById('shareWrap').style.display   = eventsOn ? '' : 'none';
+  document.getElementById('faqArea').style.display     = eventsOn ? 'none' : 'block';
+
+  if (eventsOn) {
+    document.getElementById('addFormWrap').classList.remove('open');
+    document.getElementById('addFormWrap').style.display = '';
+  } else {
+    const cs = document.getElementById('ff-cat');
+    if (cs && !cs.options.length) cs.innerHTML = faqCatOptions('');
+    loadFaqs();
+  }
+}
+
+// ── FAQ: LOAD ──
+let currentFaqs = [];
+const FAQ_CATEGORIES = ['Registration','Lodging','Attire','Transportation and Parking','Weather','Food and Beverage','Accessibility','Campus Safety','Pets','Internet and Facilities'];
+function faqCatOptions(sel) {
+  return ['<option value="">(no category)</option>']
+    .concat(FAQ_CATEGORIES.map(c => `<option value="${c}" ${sel===c?'selected':''}>${c}</option>`))
+    .join('');
+}
+
+async function loadFaqs() {
+  const sch = SCHEDULES[currentSchedule];
+  if (!sch || !sch.faqBoardId) return;
+  showStatus('info', 'Loading FAQs…');
+  try {
+    const res = await fetch(WORKER_URL + '?board=' + sch.faqBoardId);
+    const data = await res.json();
+    const items = (data.data || data).boards[0].items_page.items;
+    currentFaqs = items.map(item => {
+      const cv = {};
+      item.column_values.forEach(c => { cv[c.id] = c.text || ''; });
+      return {
+        _id: item.id,
+        q: item.name,
+        a: (cv[sch.faqCols.answer] || '').trim(),
+        order: parseInt(cv[sch.faqCols.order] || '999', 10) || 999,
+        cat: (cv[sch.faqCols.cat] || '').split(',')[0].trim(),
+      };
+    }).sort((x, y) => x.order - y.order);
+    renderFaqs();
+    showStatus('success', `Loaded ${currentFaqs.length} question${currentFaqs.length!==1?'s':''}.`);
+    setTimeout(hideStatus, 3000);
+  } catch (err) {
+    showStatus('error', 'Could not load FAQs: ' + err.message);
+  }
+}
+
+function renderFaqs() {
+  const c = document.getElementById('faqList');
+  if (!currentFaqs.length) {
+    c.innerHTML = '<div class="empty">No questions yet. Add one above.</div>';
+    return;
+  }
+
+  // group by category in the order categories first appear
+  const groups = []; const seen = {};
+  currentFaqs.forEach(f => {
+    const key = f.cat || '';
+    if (!(key in seen)) { seen[key] = groups.length; groups.push({ cat: key, items: [] }); }
+    groups[seen[key]].items.push(f);
+  });
+
+  c.innerHTML = groups.map(g => `
+    <div class="faq-cat-group">
+      <div class="faq-cat-heading">${g.cat ? esc(g.cat) : 'Uncategorised'} <span class="faq-cat-count">${g.items.length}</span></div>
+      ${g.items.map(faqRow).join('')}
+    </div>`).join('');
+}
+
+function faqRow(f) {
+  return `
+    <div class="faq-row" id="faqrow-${f._id}">
+      <div class="faq-row-main">
+        <div class="faq-order">${f.order}</div>
+        <div class="faq-info">
+          <div class="faq-q-title">${esc(f.q)}</div>
+          <div class="faq-a-preview">${esc(f.a.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()) || '(no answer yet)'}</div>
+        </div>
+        <div class="event-actions">
+          <button class="ev-action-btn edit" onclick="openFaqEdit('${f._id}')">✏ Edit</button>
+          <button class="ev-action-btn delete" onclick="confirmFaqDelete('${f._id}')">✕ Delete</button>
+        </div>
+      </div>
+      <div class="edit-panel" id="faqedit-${f._id}">
+        <h4>Editing question</h4>
+        <div class="form-grid">
+          <div class="form-field"><label>Question *</label><input id="fe-q-${f._id}" value="${esc(f.q)}" /></div>
+          <div class="form-field"><label>Category</label><select id="fe-cat-${f._id}">${faqCatOptions(f.cat)}</select></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-field"><label>Display order</label><input id="fe-order-${f._id}" type="number" value="${f.order}" /></div>
+          <div class="form-field"></div>
+        </div>
+        <div class="form-grid full">
+          <div class="form-field">
+            <label>Answer</label>
+            <div class="rt-toolbar">
+              <button type="button" class="rt-btn" onmousedown="event.preventDefault()" onclick="rtCmd('bold')" title="Bold"><strong>B</strong></button>
+              <button type="button" class="rt-btn" onmousedown="event.preventDefault()" onclick="rtCmd('italic')" title="Italic"><em>I</em></button>
+              <button type="button" class="rt-btn" onmousedown="event.preventDefault()" onclick="rtCmd('insertUnorderedList')" title="Bulleted list">&bull; List</button>
+              <button type="button" class="rt-btn" onmousedown="event.preventDefault()" onclick="rtLink()" title="Add a link">Link</button>
+              <button type="button" class="rt-btn rt-clear" onmousedown="event.preventDefault()" onclick="rtCmd('removeFormat')" title="Remove formatting">Clear</button>
+            </div>
+            <div class="rt-editor" id="fe-a-${f._id}" contenteditable="true" data-placeholder="Type the answer here.">${toEditorHtml(f.a)}</div>
+          </div>
+        </div>
+        <p class="rt-help">Type normally and use the buttons above to format.</p>
+        <div class="edit-actions">
+          <button class="save-btn" id="faqsave-${f._id}" onclick="saveFaq('${f._id}')">Save changes</button>
+          <button class="cancel-btn" onclick="closeFaqEdit('${f._id}')">Cancel</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function openFaqEdit(id) {
+  document.querySelectorAll('#faqList .edit-panel.open').forEach(p => {
+    if (p.id !== 'faqedit-' + id) p.classList.remove('open');
+  });
+  document.getElementById('faqedit-' + id).classList.toggle('open');
+}
+
+function closeFaqEdit(id) {
+  document.getElementById('faqedit-' + id).classList.remove('open');
+}
+
+// ── FAQ: SAVE ──
+async function saveFaq(id) {
+  const sch = SCHEDULES[currentSchedule];
+  const btn = document.getElementById('faqsave-' + id);
+  const q = document.getElementById('fe-q-' + id).value.trim();
+  const a = rtRead('fe-a-' + id);
+  const order = document.getElementById('fe-order-' + id).value.trim() || '999';
+  if (!q) { alert('Section heading is required.'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving…';
+
+  const cat = document.getElementById('fe-cat-' + id).value;
+  const colVals = { [sch.faqCols.answer]: a, [sch.faqCols.order]: order, [sch.faqCols.cat]: cat };
+  const colValsJson = JSON.stringify(colVals).replace(/"/g, '\\"');
+  const mutation = `mutation {
+    change_multiple_column_values(board_id: ${sch.faqBoardId}, item_id: ${id}, column_values: "${colValsJson}") { id }
+    change_simple_column_value(board_id: ${sch.faqBoardId}, item_id: ${id}, column_id: "name", value: "${q.replace(/"/g,'\\"')}") { id }
+  }`;
+
+  try {
+    const res = await fetch(WORKER_URL + '?board=' + sch.faqBoardId, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: mutation })
+    });
+    const data = await res.json();
+    if (data.errors) throw new Error(data.errors[0].message);
+    showStatus('success', `"${q}" updated.`);
+    setTimeout(hideStatus, 3000);
+    await loadFaqs();
+  } catch (err) {
+    showStatus('error', 'Save failed: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = 'Save changes';
+  }
+}
+
+// ── FAQ: ADD ──
+function toggleFaqForm() {
+  const w = document.getElementById('faqFormWrap');
+  w.classList.toggle('open');
+  if (w.classList.contains('open')) document.getElementById('ff-q').focus();
+}
+
+async function addFaq() {
+  const sch = SCHEDULES[currentSchedule];
+  const q = document.getElementById('ff-q').value.trim();
+  const a = rtRead('ff-a');
+  const order = document.getElementById('ff-order').value.trim() || String(currentFaqs.length + 1);
+  if (!q) { alert('Section heading is required.'); return; }
+
+  const btn = document.getElementById('faqAddBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Adding…';
+
+  const cat = document.getElementById('ff-cat').value;
+  const colVals = { [sch.faqCols.answer]: a, [sch.faqCols.order]: order, [sch.faqCols.cat]: cat };
+  const colValsJson = JSON.stringify(colVals).replace(/"/g, '\\"');
+  const mutation = `mutation {
+    create_item(board_id: ${sch.faqBoardId}, item_name: "${q.replace(/"/g,'\\"')}", column_values: "${colValsJson}") { id }
+  }`;
+
+  try {
+    const res = await fetch(WORKER_URL + '?board=' + sch.faqBoardId, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: mutation })
+    });
+    const data = await res.json();
+    if (data.errors) throw new Error(data.errors[0].message);
+    showStatus('success', `"${q}" added.`);
+    setTimeout(hideStatus, 3000);
+    ['ff-q','ff-order'].forEach(k => { document.getElementById(k).value = ''; });
+    document.getElementById('ff-a').innerHTML = '';
+    document.getElementById('faqFormWrap').classList.remove('open');
+    await loadFaqs();
+  } catch (err) {
+    showStatus('error', 'Could not add section: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Add section';
+  }
+}
+
+// ── FAQ: DELETE ──
+function confirmFaqDelete(id) {
+  const f = currentFaqs.find(x => x._id === id);
+  if (!f) return;
+  document.getElementById('confirmMsg').textContent =
+    `"${f.q}" will be permanently removed from the FAQ list on the live page.`;
+  document.getElementById('confirmYes').onclick = () => deleteFaq(id);
+  document.getElementById('confirmBg').classList.add('open');
+}
+
+async function deleteFaq(id) {
+  closeConfirm();
+  const sch = SCHEDULES[currentSchedule];
+  const f = currentFaqs.find(x => x._id === id);
+  showStatus('info', `Deleting "${f?.q}"…`);
+  try {
+    const res = await fetch(WORKER_URL + '?board=' + sch.faqBoardId, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: `mutation { delete_item(item_id: ${id}) { id } }` })
+    });
+    const data = await res.json();
+    if (data.errors) throw new Error(data.errors[0].message);
+    showStatus('success', `"${f?.q}" deleted.`);
+    setTimeout(hideStatus, 3000);
+    await loadFaqs();
+  } catch (err) {
+    showStatus('error', 'Delete failed: ' + err.message);
+  }
 }
 
 // ── SHARE LINKS ──
@@ -545,7 +996,8 @@ function buildShareLinks() {
       <a class="share-open" href="${url}" target="_blank" rel="noopener">Open</a>
     </div>`;
 
-  const embedCode = `<iframe src="${base}?embed=1" width="100%" height="860" frameborder="0" style="border:none;"></iframe>`;
+  const embedCode    = `<iframe src="${base}?embed=1" width="100%" height="860" frameborder="0" style="border:none;"></iframe>`;
+  const faqEmbedCode = `<iframe src="${base}?embed=faq" width="100%" height="700" frameborder="0" style="border:none;"></iframe>`;
 
   let html = `
     <div class="share-group">
@@ -554,9 +1006,15 @@ function buildShareLinks() {
     </div>
 
     <div class="share-group">
-      <div class="share-group-label">Squarespace embed code</div>
+      <div class="share-group-label">Squarespace embed — full schedule</div>
       <div class="share-embed">${escHtml(embedCode)}</div>
       <button class="share-copy" onclick="copyShare(this, ${JSON.stringify(embedCode).replace(/"/g,'&quot;')})">Copy embed code</button>
+    </div>
+
+    <div class="share-group">
+      <div class="share-group-label">Squarespace embed — FAQs only</div>
+      <div class="share-embed">${escHtml(faqEmbedCode)}</div>
+      <button class="share-copy" onclick="copyShare(this, ${JSON.stringify(faqEmbedCode).replace(/"/g,'&quot;')})">Copy embed code</button>
     </div>`;
 
   if (sch.classes && sch.classes.length) {
