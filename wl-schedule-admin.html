@@ -505,7 +505,7 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
             <div class="form-field"><label>Category</label><select id="ff-cat"></select></div>
           </div>
           <div class="form-grid">
-            <div class="form-field"><label>Display order</label><input id="ff-order" type="number" placeholder="e.g. 3" /></div>
+            <div class="form-field"><label>Order within category</label><input id="ff-order" type="number" placeholder="e.g. 3" /></div>
             <div class="form-field"></div>
           </div>
           <div class="form-grid full">
@@ -560,6 +560,7 @@ const SCHEDULES = {
     classes: ['1976','1981','1986','1991','1996','2001','2006','2011'],
     faqBoardId: '18430208229',
     faqCols: { answer: 'long_text_mm70evvf', order: 'numeric_mm701apq', cat: 'dropdown_mm70tffg' },
+    faqCategories: ['Registration','Lodging','Attire','Transportation and Parking','Weather','Food and Beverage','Accessibility','Campus Safety','Pets','Internet and Facilities'],
     days:    ['Thursday, April 30','Friday, May 1','Saturday, May 2','Sunday, May 3'],
     cols: {
       date:     'text_mm26t2ks',
@@ -579,6 +580,7 @@ const SCHEDULES = {
     classes: [],
     faqBoardId: '18430208241',
     faqCols: { answer: 'long_text_mm70xsbz', order: 'numeric_mm704sfp', cat: 'dropdown_mm701mxa' },
+    faqCategories: ['Tickets','Lodging','Transportation and Parking','Food and Beverage','Attire','Accessibility','Families','Pets','Campus Safety','Weather','Internet and Facilities'],
     days:    ['Friday, September 25','Saturday, September 26','Sunday, September 27'],
     cols: {
       date:     'text_mm3j92dc',
@@ -598,6 +600,7 @@ const SCHEDULES = {
     classes: [],
     faqBoardId: '18430208260',
     faqCols: { answer: 'long_text_mm70c5gg', order: 'numeric_mm70msnb', cat: 'dropdown_mm70fcda' },
+    faqCategories: ['Registration','Lodging','Attire','Transportation and Parking','Weather','Food and Beverage','Accessibility','Campus Safety','Pets','Internet and Facilities'],
     days:    ['Thursday, September 17','Friday, September 18','Saturday, September 19'],
     cols: {
       date:     'text_mm3jpdk',
@@ -683,46 +686,55 @@ document.addEventListener('paste', e => {
   document.execCommand('insertText', false, text);
 });
 
-/* Read an editor's contents back out as tidy HTML. */
+/* Read the editor back out as plain readable text, so what is stored
+   in Monday has no HTML tags in it. */
 function rtRead(id) {
   const ed = document.getElementById(id);
   if (!ed) return '';
-  const tmp = document.createElement('div');
-  tmp.innerHTML = ed.innerHTML;
+  return nodeToText(ed).replace(/\n{3,}/g, '\n\n').trim();
+}
 
-  tmp.querySelectorAll('*').forEach(el => {
-    el.removeAttribute('style');
-    el.removeAttribute('class');
-    el.removeAttribute('id');
-    if (el.tagName === 'A') {
-      el.setAttribute('target', '_blank');
-      el.setAttribute('rel', 'noopener');
-    }
-    if (el.tagName === 'B')  replaceTag(el, 'strong');
-    if (el.tagName === 'I')  replaceTag(el, 'em');
-    if (el.tagName === 'DIV') replaceTag(el, 'p');
-    if (el.tagName === 'SPAN' || el.tagName === 'FONT') el.replaceWith(...el.childNodes);
+function nodeToText(node) {
+  let out = '';
+  node.childNodes.forEach(n => {
+    if (n.nodeType === 3) { out += n.nodeValue.replace(/\s+/g, ' '); return; }
+    if (n.nodeType !== 1) return;
+    const tag = n.tagName;
+    if (tag === 'BR') { out += '\n'; return; }
+    if (tag === 'P' || tag === 'DIV') { out += nodeToText(n).trim() + '\n\n'; return; }
+    if (tag === 'UL' || tag === 'OL')  { out += nodeToText(n) + '\n'; return; }
+    if (tag === 'LI') { out += '- ' + nodeToText(n).trim() + '\n'; return; }
+    if (tag === 'STRONG' || tag === 'B') { out += '**' + nodeToText(n).trim() + '**'; return; }
+    if (tag === 'EM' || tag === 'I')     { out += '*'  + nodeToText(n).trim() + '*';  return; }
+    if (tag === 'A') { out += '[' + nodeToText(n).trim() + '](' + (n.getAttribute('href') || '') + ')'; return; }
+    out += nodeToText(n);
   });
-
-  let html = tmp.innerHTML
-    .replace(/<p>(\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, '')
-    .trim();
-  return html === '<br>' ? '' : html;
+  return out;
 }
 
-function replaceTag(el, tag) {
-  const n = document.createElement(tag);
-  while (el.firstChild) n.appendChild(el.firstChild);
-  el.replaceWith(n);
-}
-
-/* Content saved as plain text (e.g. typed straight into Monday) shows
-   with its line breaks preserved when loaded back into the editor. */
+/* Turn the stored plain text back into formatted content for the editor. */
 function toEditorHtml(t) {
   if (!t) return '';
-  if (/<(p|ul|ol|li|br|strong|em|b|i|a)\b/i.test(t)) return t;
+  if (/<(p|ul|ol|li|br|strong|em|b|i|a)\b/i.test(t)) return t;   // legacy HTML
   const esc = x => x.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  return t.split(/\r?\n/).filter(l => l.trim()).map(l => '<p>' + esc(l.trim()) + '</p>').join('');
+  const inline = x => esc(x)
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2">$1</a>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+  let out = '', list = false;
+  t.split(/\r?\n/).forEach(raw => {
+    const line = raw.trim();
+    if (!line) { if (list) { out += '</ul>'; list = false; } return; }
+    if (/^[-*\u2022]\s+/.test(line)) {
+      if (!list) { out += '<ul>'; list = true; }
+      out += '<li>' + inline(line.replace(/^[-*\u2022]\s+/, '')) + '</li>';
+    } else {
+      if (list) { out += '</ul>'; list = false; }
+      out += '<p>' + inline(line) + '</p>';
+    }
+  });
+  if (list) out += '</ul>';
+  return out;
 }
 
 // ── MODE (Events / FAQs) ──
@@ -745,17 +757,22 @@ function setMode(mode) {
     document.getElementById('addFormWrap').style.display = '';
   } else {
     const cs = document.getElementById('ff-cat');
-    if (cs && !cs.options.length) cs.innerHTML = faqCatOptions('');
+    if (cs) cs.innerHTML = faqCatOptions('');
     loadFaqs();
   }
 }
 
 // ── FAQ: LOAD ──
 let currentFaqs = [];
-const FAQ_CATEGORIES = ['Registration','Lodging','Attire','Transportation and Parking','Weather','Food and Beverage','Accessibility','Campus Safety','Pets','Internet and Facilities'];
+/* Each schedule has its own category list, set in SCHEDULES above.
+   The order there is the order categories appear on the live page. */
+function faqCats() {
+  const sch = SCHEDULES[currentSchedule];
+  return (sch && sch.faqCategories) || [];
+}
 function faqCatOptions(sel) {
   return ['<option value="">(no category)</option>']
-    .concat(FAQ_CATEGORIES.map(c => `<option value="${c}" ${sel===c?'selected':''}>${c}</option>`))
+    .concat(faqCats().map(c => `<option value="${c}" ${sel===c?'selected':''}>${c}</option>`))
     .join('');
 }
 
@@ -793,18 +810,22 @@ function renderFaqs() {
     return;
   }
 
-  // group by category in the order categories first appear
-  const groups = []; const seen = {};
+  // bucket by category, then lay them out in the fixed page order
+  const buckets = {};
   currentFaqs.forEach(f => {
     const key = f.cat || '';
-    if (!(key in seen)) { seen[key] = groups.length; groups.push({ cat: key, items: [] }); }
-    groups[seen[key]].items.push(f);
+    (buckets[key] = buckets[key] || []).push(f);
   });
+  const cats    = faqCats();
+  const known   = cats.filter(k => buckets[k]);
+  const extra   = Object.keys(buckets).filter(k => k && cats.indexOf(k) === -1).sort();
+  const ordered = known.concat(extra);
+  if (buckets['']) ordered.push('');
 
-  c.innerHTML = groups.map(g => `
+  c.innerHTML = ordered.map(cat => `
     <div class="faq-cat-group">
-      <div class="faq-cat-heading">${g.cat ? esc(g.cat) : 'Uncategorised'} <span class="faq-cat-count">${g.items.length}</span></div>
-      ${g.items.map(faqRow).join('')}
+      <div class="faq-cat-heading">${cat ? esc(cat) : 'Uncategorised'} <span class="faq-cat-count">${buckets[cat].length}</span></div>
+      ${buckets[cat].map(faqRow).join('')}
     </div>`).join('');
 }
 
@@ -829,7 +850,7 @@ function faqRow(f) {
           <div class="form-field"><label>Category</label><select id="fe-cat-${f._id}">${faqCatOptions(f.cat)}</select></div>
         </div>
         <div class="form-grid">
-          <div class="form-field"><label>Display order</label><input id="fe-order-${f._id}" type="number" value="${f.order}" /></div>
+          <div class="form-field"><label>Order within category</label><input id="fe-order-${f._id}" type="number" value="${f.order}" /></div>
           <div class="form-field"></div>
         </div>
         <div class="form-grid full">
