@@ -525,12 +525,6 @@ body.faq-only .page-body { padding-top: 0.5rem; }
    headings set in the display serif, questions as open rows rather
    than boxed cards, answers indented under the question.
 ═══════════════════════════════════════ */
-.faq-intro-wrap { max-width: 62ch; margin-bottom: 2.25rem; }
-.faq-intro-title {
-  font-family: var(--serif); font-size: clamp(1.6rem, 4vw, 2.1rem);
-  font-weight: normal; color: var(--navy); line-height: 1.15; margin-bottom: 0.6rem;
-}
-.faq-intro-text { font-size: 16px; line-height: 1.65; color: var(--text-mid); }
 
 .faq-wrap { gap: 0; }
 .faq-group { margin-bottom: 2.5rem; }
@@ -575,6 +569,34 @@ body.faq-only .page-body { padding-top: 0.5rem; }
   .faq-q { font-size: 15px; padding: 14px 2px; }
   .faq-a { font-size: 15px; }
 }
+
+/* FAQ-only embed: sit on the host page's background rather than
+   drawing a panel of our own. Text is set light for the dark blue
+   section it is embedded into; add &theme=light to the URL if the
+   surrounding section is ever a pale colour. */
+body.faq-only { background: transparent; }
+body.faq-only .page-body { padding-top: 0; padding-bottom: 1rem; }
+body.faq-only .faq-group-heading { color: #fff; }
+body.faq-only .faq-item { border-bottom-color: rgba(255,255,255,0.22); }
+body.faq-only .faq-group .faq-item:first-of-type { border-top-color: rgba(255,255,255,0.65); }
+body.faq-only .faq-q { color: #fff; }
+body.faq-only .faq-q:hover { color: rgba(255,255,255,0.72); }
+body.faq-only .faq-chevron { color: #fff; opacity: 0.55; }
+body.faq-only .faq-item.open .faq-chevron { opacity: 0.85; }
+body.faq-only .faq-a { color: rgba(255,255,255,0.9); }
+body.faq-only .faq-a strong { color: #fff; }
+body.faq-only .faq-a a { color: #fff; }
+body.faq-only .empty-state { color: rgba(255,255,255,0.75); }
+
+/* pale-background override */
+body.faq-only.faq-light .faq-group-heading,
+body.faq-only.faq-light .faq-q { color: var(--navy); }
+body.faq-only.faq-light .faq-item { border-bottom-color: var(--border-lt); }
+body.faq-only.faq-light .faq-group .faq-item:first-of-type { border-top-color: var(--navy); }
+body.faq-only.faq-light .faq-chevron { color: inherit; opacity: 0.4; }
+body.faq-only.faq-light .faq-a { color: var(--text-mid); }
+body.faq-only.faq-light .faq-a strong { color: var(--navy); }
+body.faq-only.faq-light .faq-a a { color: var(--crimson); }
 </style>
 </head>
 <body>
@@ -749,10 +771,6 @@ body.faq-only .page-body { padding-top: 0.5rem; }
   </div><!-- end panel-transportation -->
 <!-- FAQ PANEL -->
   <div id="panel-faq" style="display:none;">
-    <div class="faq-intro-wrap">
-      <h2 class="faq-intro-title">Welcome back</h2>
-      <p class="faq-intro-text">Find your perfect place to stay, and don't miss the chance to reunite and bring back memories made on campus. Read the questions below for all of the weekend details.</p>
-    </div>
     <div class="faq-wrap" id="faqList"></div>
   </div><!-- end panel-faq -->
 </div>
@@ -994,7 +1012,11 @@ function showLoadingState() {
 async function init() {
   const embedParam = getParam('embed');
   if (embedParam === '1') document.body.classList.add('embed-mode');
-  if (embedParam === 'faq') { document.body.classList.add('embed-mode'); document.body.classList.add('faq-only'); }
+  if (embedParam === 'faq') {
+    document.body.classList.add('embed-mode');
+    document.body.classList.add('faq-only');
+    if (getParam('theme') === 'light') document.body.classList.add('faq-light');
+  }
   if (getParam('public') === '1') document.body.classList.add('public-mode');
   activeDay   = getParam('day')   || 'all';
   activeClass = getParam('class') || 'all';
