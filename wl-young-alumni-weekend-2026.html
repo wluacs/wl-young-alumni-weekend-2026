@@ -518,6 +518,63 @@ body.faq-only .page-body { padding-top: 0.5rem; }
   .card-title { font-size: 15px; }
   .card-meta-item { font-size: 13px; }
 }
+
+/* ═══════════════════════════════════════
+   FAQ — editorial accordion
+   Matches the sectioned, hairline-ruled FAQ on the event website:
+   headings set in the display serif, questions as open rows rather
+   than boxed cards, answers indented under the question.
+═══════════════════════════════════════ */
+.faq-intro-wrap { max-width: 62ch; margin-bottom: 2.25rem; }
+.faq-intro-title {
+  font-family: var(--serif); font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-weight: normal; color: var(--navy); line-height: 1.15; margin-bottom: 0.6rem;
+}
+.faq-intro-text { font-size: 16px; line-height: 1.65; color: var(--text-mid); }
+
+.faq-wrap { gap: 0; }
+.faq-group { margin-bottom: 2.5rem; }
+.faq-group-heading {
+  font-family: var(--serif); font-size: 21px; font-weight: normal;
+  color: var(--navy); margin-bottom: 2px; padding-bottom: 0;
+  border-bottom: none; letter-spacing: 0.01em;
+}
+
+.faq-item {
+  background: none; border: none; border-radius: 0;
+  border-bottom: 1px solid var(--border-lt); margin-bottom: 0;
+}
+.faq-group .faq-item { margin-bottom: 0; }
+.faq-group .faq-item:first-of-type { border-top: 2px solid var(--navy); }
+
+.faq-q {
+  padding: 16px 4px; font-size: 16px; font-weight: 500;
+  color: var(--navy); gap: 16px; align-items: flex-start;
+}
+.faq-q:hover { background: none; color: var(--crimson); }
+.faq-q:focus-visible { outline: 2px solid var(--sky); outline-offset: -2px; }
+.faq-item.open .faq-q { font-weight: 600; }
+
+.faq-chevron { margin-top: 4px; opacity: 0.4; }
+.faq-item.open .faq-chevron { opacity: 0.7; }
+
+.faq-a {
+  padding: 0 4px 20px 0; max-width: 68ch;
+  font-size: 15.5px; line-height: 1.7; color: var(--text-mid);
+}
+.faq-a p  { margin-bottom: 12px; }
+.faq-a ul { margin: 0 0 12px 18px; }
+.faq-a li { margin-bottom: 7px; }
+.faq-a a  { color: var(--crimson); text-decoration: underline; text-underline-offset: 2px; }
+.faq-a a:hover { text-decoration-thickness: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-chevron { transition: none; }
+}
+@media (max-width: 580px) {
+  .faq-q { font-size: 15px; padding: 14px 2px; }
+  .faq-a { font-size: 15px; }
+}
 </style>
 </head>
 <body>
@@ -631,15 +688,71 @@ body.faq-only .page-body { padding-top: 0.5rem; }
   <!-- TRANSPORTATION PANEL -->
   <div id="panel-transportation" style="display:none;">
     <div class="transport-wrap">
-      <div style="text-align:center; padding: 4rem 2rem;">
-        <svg style="width:48px;height:48px;color:#1e2d6e;opacity:0.3;margin-bottom:1rem;" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="7" width="16" height="9" rx="2"/><path d="M5 7V5a3 3 0 0 1 3-3h4a3 3 0 0 1 3 3v2"/><circle cx="6" cy="16" r="1.5"/><circle cx="14" cy="16" r="1.5"/></svg>
-        <h3 style="font-family:Georgia,serif; font-weight:normal; font-size:1.4rem; color:#1e2d6e; margin-bottom:0.5rem;">Transportation Information Coming Soon</h3>
-        <p style="color:#888; font-size:14px; max-width:360px; margin:0 auto;">Shuttle schedules and parking details will be posted here closer to the event.</p>
+
+      <div class="transport-note">
+        <svg style="width:15px;height:15px;flex-shrink:0;margin-top:2px;" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="10" cy="10" r="8"/><path d="M10 9v5M10 6.5v.5"/></svg>
+        <span><strong>Shuttle vans operate on a loop, running every 20&ndash;30 minutes.</strong> Depending on volume, wait times may exist &mdash; please plan accordingly.</span>
       </div>
+
+      <div class="transport-day">
+        <div class="transport-day-heading">Shuttle hours</div>
+        <div class="transport-table">
+          <div class="tr-row">
+            <div class="tr-time">Friday, Sept 25</div>
+            <div class="tr-desc">9:00 a.m. until 2:00 a.m.</div>
+          </div>
+          <div class="tr-row">
+            <div class="tr-time">Saturday, Sept 26</div>
+            <div class="tr-desc">10:00 a.m. until 2:00 a.m.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="transport-day">
+        <div class="transport-day-heading">Route and stops</div>
+        <div class="transport-table">
+          <div class="tr-row">
+            <div class="tr-time">Pick-up</div>
+            <div class="tr-desc">Vans run a specific route between the hotels listed below, the pole houses, Greenhouse Road houses, and the Cabins, looping during the designated hours.</div>
+          </div>
+          <div class="tr-row">
+            <div class="tr-time">Campus drop-off</div>
+            <div class="tr-desc"><strong>The Quad</strong> &mdash; along Washington Street across from Childress Hall, the new Williams School building.</div>
+          </div>
+          <div class="tr-row tr-highlight">
+            <div class="tr-time">Evening activities</div>
+            <div class="tr-desc">Shuttles also pick up and drop off along <strong>Denny Circle</strong>, near the Law School Lawn.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="transport-hotels">
+        <div class="transport-hotels-heading">Shuttles serve these hotels on Friday and Saturday</div>
+        <div class="transport-hotels-grid">
+          <span>Best Western Plus Inn at Hunt Ridge</span>
+          <span>Best Western Lexington Inn</span>
+          <span>Sleep Inn &amp; Suites</span>
+          <span>Comfort Inn</span>
+          <span>Country Inn &amp; Suites by Radisson</span>
+          <span>Hampton Inn</span>
+          <span>Holiday Inn Express</span>
+          <span>Motel 6</span>
+          <span>Spark</span>
+          <span>Super 8</span>
+          <span>Wingate</span>
+          <span>Tru by Hilton</span>
+          <span>Residence Inn by Marriott</span>
+        </div>
+      </div>
+
     </div>
   </div><!-- end panel-transportation -->
 <!-- FAQ PANEL -->
   <div id="panel-faq" style="display:none;">
+    <div class="faq-intro-wrap">
+      <h2 class="faq-intro-title">Welcome back</h2>
+      <p class="faq-intro-text">Find your perfect place to stay, and don't miss the chance to reunite and bring back memories made on campus. Read the questions below for all of the weekend details.</p>
+    </div>
     <div class="faq-wrap" id="faqList"></div>
   </div><!-- end panel-faq -->
 </div>
