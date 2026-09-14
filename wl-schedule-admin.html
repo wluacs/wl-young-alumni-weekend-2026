@@ -85,7 +85,7 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
 /* ── SCHEDULE PICKER ── */
 .picker-section { margin-bottom: 2rem; }
 .picker-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 10px; }
-.picker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.picker-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
 .schedule-card {
   background: var(--card); border: 2px solid var(--border);
   border-radius: 12px; padding: 16px 18px; cursor: pointer;
@@ -415,6 +415,11 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
           <div class="sc-dates">April 29 – May 2, 2027</div>
           <div class="sc-count" id="aw27-count">—</div>
         </div>
+        <div class="schedule-card" onclick="selectSchedule('baw27')">
+          <div class="sc-name">Black Alumni Weekend 2027</div>
+          <div class="sc-dates">April 2–3, 2027</div>
+          <div class="sc-count" id="baw27-count">—</div>
+        </div>
         <div class="schedule-card" onclick="selectSchedule('yaw26')">
           <div class="sc-name">Young Alumni Weekend 2026</div>
           <div class="sc-dates">September 25–27, 2026</div>
@@ -571,6 +576,26 @@ const SCHEDULES = {
       classes:  'text_mm768qkd',
       sub:      'text_mm76x2qz',
       desc:     'long_text_mm763k9w',
+    }
+  },
+  baw27: {
+    name:    'Black Alumni Weekend 2027',
+    boardId: '18431014370',
+    url:     'https://wluacs.github.io/wl-black-alumni-weekend-2027/wl-black-alumni-weekend-2027.html',
+    classes: [],
+    faqBoardId: '18431014385',
+    faqCols: { answer: 'long_text_mm769e54', order: 'numeric_mm7627se', cat: 'dropdown_mm76j7ha' },
+    faqCategories: ['Registration','Lodging','Transportation and Parking','Food and Beverage','Attire','Accessibility','Families','Pets','Campus Safety','Weather','Internet and Facilities'],
+    days:    ['Friday, April 2','Saturday, April 3'],
+    cols: {
+      date:     'text_mm766t9x',
+      start:    'text_mm764t34',
+      end:      'text_mm76x0qw',
+      location: 'text_mm76twkb',
+      cat:      'dropdown_mm76zbyq',
+      classes:  'text_mm767g56',
+      sub:      'text_mm766db3',
+      desc:     'long_text_mm76rf1a',
     }
   },
   yaw26: {
