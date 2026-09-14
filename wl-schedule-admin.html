@@ -410,10 +410,10 @@ body { font-family: var(--sans); background: var(--bg); color: var(--text); min-
     <div class="picker-section">
       <div class="picker-label">Select a schedule to manage</div>
       <div class="picker-grid">
-        <div class="schedule-card" onclick="selectSchedule('aw26')">
-          <div class="sc-name">Alumni Weekend 2026</div>
-          <div class="sc-dates">April 30 – May 3, 2026</div>
-          <div class="sc-count" id="aw26-count">—</div>
+        <div class="schedule-card" onclick="selectSchedule('aw27')">
+          <div class="sc-name">Alumni Weekend 2027</div>
+          <div class="sc-dates">April 29 – May 2, 2027</div>
+          <div class="sc-count" id="aw27-count">—</div>
         </div>
         <div class="schedule-card" onclick="selectSchedule('yaw26')">
           <div class="sc-name">Young Alumni Weekend 2026</div>
@@ -553,24 +553,24 @@ const PASSWORD   = 'WLUacs2026';
 const WORKER_URL = 'https://aw26schedule.tmeeker.workers.dev/';
 
 const SCHEDULES = {
-  aw26: {
-    name:    'Alumni Weekend 2026',
-    boardId: '18407567492',
-    url:     'https://wluacs.github.io/wl-alumni-weekend-2026/wl-alumni-weekend-2026.html',
-    classes: ['1976','1981','1986','1991','1996','2001','2006','2011'],
-    faqBoardId: '18430208229',
-    faqCols: { answer: 'long_text_mm70evvf', order: 'numeric_mm701apq', cat: 'dropdown_mm70tffg' },
-    faqCategories: ['Registration','Lodging','Attire','Transportation and Parking','Weather','Food and Beverage','Accessibility','Campus Safety','Pets','Internet and Facilities'],
-    days:    ['Thursday, April 30','Friday, May 1','Saturday, May 2','Sunday, May 3'],
+  aw27: {
+    name:    'Alumni Weekend 2027',
+    boardId: '18430936339',
+    url:     'https://wluacs.github.io/wl-alumni-weekend-2027/wl-alumni-weekend-2027.html',
+    classes: ['1977','1982','1987','1992','1997','2002','2007','2012'],
+    faqBoardId: '18430936354',
+    faqCols: { answer: 'long_text_mm768e5e', order: 'numeric_mm76x2v3', cat: 'dropdown_mm767kjg' },
+    faqCategories: ['Registration','Lodging','Transportation and Parking','Food and Beverage','Attire','Accessibility','Families','Pets','Campus Safety','Weather','Internet and Facilities'],
+    days:    ['Thursday, April 29','Friday, April 30','Saturday, May 1','Sunday, May 2'],
     cols: {
-      date:     'text_mm26t2ks',
-      start:    'text_mm26ew9e',
-      end:      'text_mm26es9f',
-      location: 'text_mm26akqn',
-      cat:      'dropdown_mm26zmmb',
-      classes:  'text_mm264cbe',
-      sub:      'text_mm26ef43',
-      desc:     'text_mm26trg4',
+      date:     'text_mm768wb8',
+      start:    'text_mm76359c',
+      end:      'text_mm76w5y2',
+      location: 'text_mm76cz9h',
+      cat:      'dropdown_mm76p8dp',
+      classes:  'text_mm768qkd',
+      sub:      'text_mm76x2qz',
+      desc:     'long_text_mm763k9w',
     }
   },
   yaw26: {
